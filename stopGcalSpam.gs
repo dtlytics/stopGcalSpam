@@ -9,21 +9,21 @@ function listUpcomingEvents() {
     timeMin: (new Date()).toISOString(),
     showDeleted: false,
     singleEvents: true,
-    maxResults: 100,
+    maxResults: 1000,
     orderBy: 'startTime'
   };
-  var badStrings = ["ВАМ ДОСТУПЕН ДЕНЕЖНЫЙ ПЕРЕВОД"];
+  var badStrings = ["ВАМ ДОСТУПЕН ДЕНЕЖНЫЙ ПЕРЕВОД","ДЕНЕЖНЫЙ","НАЧИСЛЕНИЕ","СРЕДСТВ"];
   var response = Calendar.Events.list(calendarId, optionalArgs);
   var events = response.items;
   if (events.length > 0) {
-    for (i = 0; i < events.length; i++) {
-      var event = events[i];
-          for (badString in badStrings) {
-            if(event.summary.indexOf(badString) > 0 ) {
-              Logger.log( event.id);
-              //Delete the event
-              deleteEvent(event.id);
+    for (i = 0; i < events.length ; i++) {
     
+    var event = events[i];
+    
+          for (badString in badStrings) {
+            if(event.summary.indexOf(badStrings[badString]) > 0 ) {
+              //Delete the event
+              deleteEvent(event.id);  
             }
           }
       var when = event.start.dateTime;
@@ -38,19 +38,16 @@ function listUpcomingEvents() {
 
  function deleteEvent(eventId) {
 
- var baseUrl = "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events/{eventId}?sendNotifications=true";
+ var baseUrl = "https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events/{eventId}?sendNotifications=false";
  var calendarId = CalendarApp.getDefaultCalendar().getId();
 
  var url = baseUrl.replace("{calendarId}", calendarId).replace("{eventId}", eventId);
-Logger.log(url); 
   var options = {
 
     "method": "DELETE",
     "headers": {"Authorization":"Bearer " + ScriptApp.getOAuthToken()},
     "muteHttpExceptions": true
-
   };
-
   var res = UrlFetchApp.fetch(url, options).getContentText();  
   Logger.log(res);    
 }
